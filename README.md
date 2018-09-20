@@ -4,9 +4,9 @@
  ## 运行项目（nodejs 6.0+）
 
 ```
- git clone https://github.com/xxxx.git
+ git clone https://github.com/CoderZF/jianshu-pc.git
 
- cd xxxx
+ cd jianshu-pc
 
  npm i  或者运行  yarn(推荐)
   
