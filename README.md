@@ -17,7 +17,7 @@
 ## 项目结构及技术点介绍：
 *该项目由 [Create React App](https://github.com/facebookincubator/create-react-app) 搭建.*
 
-项目结构：
+项目目录结构：
 ```
 jianshu-pc
 │   README.md
