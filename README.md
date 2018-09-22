@@ -3,7 +3,7 @@
 - [项目结构及技术点介绍](#user-content-项目结构及技术点介绍)
 	+ [项目结构](#user-content-项目结构)
 	+ [styled components](#styled-components)
- 	+ [项目结构](#user-content-使用iconfont嵌入图标)
+ 	+ [使用iconfont嵌入图标](#user-content-使用iconfont嵌入图标)
 - [代码和性能优化](#user-content-代码和性能优化)
 - [License](#License)
 
