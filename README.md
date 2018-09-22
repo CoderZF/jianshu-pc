@@ -1,6 +1,6 @@
 ## 目录
 - [技术栈](#user-content-技术栈)
-- [styled-components](##styled-components)
+- [项目结构及技术点介绍](#user-content-项目结构及技术点介绍)
 - [Bugs and feature requests](#Bugs-and-feature-requests)
 - [License](#License)
 
