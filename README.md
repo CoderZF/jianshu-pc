@@ -9,6 +9,7 @@
      + 等等。。。
 - [项目代码和性能优化](#user-content-代码和性能优化)
      + [this绑定的性能优化](#user-content-this绑定优化)
+     + [合理使用无状态组件](#user-content-使用无状态组件提高性能)
 
 # 技术栈：
   react + redux + redux-thunk（让redux支持异步的中间件） +  webpack + react-router + ES6/7/8 + axios + react-transition-group（react动画库）+ react-loadable（使组件按需加载） + styled-components（css组件化） + immutable.js
@@ -295,7 +296,7 @@ class Test extends React.Component {
     }
 }
 ```
-使用这个语法有个问题就是每次 Test 渲染的时候都会创建一个不同的回调函数。在大多数情况下，这没有问题。然而如果这个回调函数作为一个属性值传入低阶组件，这些组件可能会进行额外的重新渲染。我们通常建议在构造函数中绑定或使用属性初始化器语法来避免这类性能问题。
+使用这个语法有个问题就是每次 Test 渲染的时候都会创建一个不同的回调函数。在大多数情况下，这没有问题。然而如果这个回调函数作为一个属性值传入低阶组件，这些组件可能会进行额外的重新渲染。我们通常建议在构造函数中绑定或像下面代码使用属性初始化器语法来避免这类性能问题。
 ``` javascript
 class Test extends React.Component {
     constructor (props) {
@@ -316,6 +317,29 @@ class Test extends React.Component {
     }
 }
 ```
+#### 使用无状态组件提高性能
+如此组件没有状态的影响或者仅仅纯静态展示时，完全可以用无状态组件来替代有状态组件，因其除render无任何其他生命周期方法且仅仅返回的是个函数，无实例化过程，大大提升了性能。
+``` js
+import React, { PureComponent } from 'react';
+import { WriterWrapper } from '../style';
 
+class Writer extends PureComponent {
 
+	render() {
+		return (
+			<WriterWrapper>HomeWork</WriterWrapper>
+		)
+	}
+}
 
+export default Writer;
+```
+上面组件就可以完全改装成如下无状态组件。
+``` javascript
+import React, { PureComponent } from "react";
+import { WriterWrapper } from "../style";
+
+const Writer = () => <WriterWrapper>HomeWork</WriterWrapper>;
+
+export default Writer;
+```
