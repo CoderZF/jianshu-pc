@@ -6,8 +6,7 @@
  	+ [使用iconfont嵌入图标](#user-content-使用iconfont嵌入图标)
  	+ [使用react-transition-group动画库](#user-content-动画库的使用)
      + [使用react-redux及其中间件](#user-content-使用react-redux及其中间件)
-     
-        ...
+     + 等等
 - [项目代码和性能优化](#user-content-代码和性能优化)
      + [this绑定的性能优化](#user-content-this绑定优化)
 
