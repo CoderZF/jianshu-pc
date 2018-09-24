@@ -13,6 +13,7 @@
      + [Immutable.js与redux结合使用](#user-content-immutablejs与redux结合使用)
      + [避免无意义的网络请求](#user-content-避免无意义的网络请求)
      + [异步操作代码拆分优化](#user-content-异步操作代码拆分优化)
+     + [使用PureComponent](#user-content-使用PureComponent)
 
 # 技术栈：
   react + redux + redux-thunk（让redux支持异步的中间件） +  webpack + react-router + ES6/7/8 + axios + react-transition-group（react动画库）+ react-loadable（使组件按需载） + styled-components（css组件化） + immutable.js
@@ -508,3 +509,7 @@ const mapDispatch = (dispatch) => ({
 
 export default connect(mapState, mapDispatch)(List);
 ```
+
+#### 使用PureComponent
+继承Component的普通组件，使用react-redux的connect连接了store，那么只要store内的数据发生改变就会让所有连接的组件触发render，这样就会产生不必要的渲染开销，当然使用shouldComponentUpdate也可以阻止不必要的渲染，但这样的话每个组件都要写同样的shouldComponentUpdate方法；继承PureComponent的组件正好解决了这一痛点，默认实现的shouldComponentUpdate。
+![image.png](https://upload-images.jianshu.io/upload_images/1517219-98c8ca3b3b7085b8.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240)
