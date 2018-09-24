@@ -11,6 +11,7 @@
      + [this绑定的性能优化](#user-content-this绑定优化)
      + [合理使用无状态组件](#user-content-使用无状态组件提高性能)
      + [Immutable.js与redux结合使用](#user-content-immutablejs与redux结合使用)
+     + [避免无意义的网络请求](#user-content-避免无意义的网络请求)
 
 # 技术栈：
   react + redux + redux-thunk（让redux支持异步的中间件） +  webpack + react-router + ES6/7/8 + axios + react-transition-group（react动画库）+ react-loadable（使组件按需载） + styled-components（css组件化） + immutable.js
@@ -401,4 +402,16 @@ export const getList = () => {
 		})
 	}
 };
+```
+#### 避免无意义的网络请求
+比如在请求热门搜索提示项的时候，只有当size是0的时候我才去发送请求。
+``` js
+  const mapDispathToProps = dispatch => {
+  return {
+    handleInputFocus(list) {
+      list.size === 0 && dispatch(actionCreators.getList());
+      dispatch(actionCreators.searchFocus());
+    },
+  ...
+    };
 ```
