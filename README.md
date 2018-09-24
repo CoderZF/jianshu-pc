@@ -345,3 +345,60 @@ const Writer = () => <WriterWrapper>HomeWork</WriterWrapper>;
 export default Writer;
 ```
 #### immutable.js与redux结合使用
+当我们对一个Immutable对象进行操作的时候，ImmutableJS基于哈希映射树(hash map tries)和vector map tries，只clone该节点以及它的祖先节点，其他保持不变，这样可以共享相同的部分，大大提高性能。在对Immutable对象的操作均会返回新的对象，所以使用redux的reducer中就不需要总是想着不能修改原state，因为对Immutable对象的操作返回就是新的对象，且比普通js深拷贝产生的性能消耗要低得多。
+  我在项目中也是大量使用immutable.js
+``` js
+import * as constants from './constants';
+import { fromJS } from 'immutable';
+
+const defaultState = fromJS({
+	focused: false,
+	mouseIn: false,
+	list: [],
+	page: 1,
+	totalPage: 1
+});
+
+export default (state = defaultState, action) => {
+	switch(action.type) {
+		case constants.SEARCH_FOCUS:
+			return state.set('focused', true);
+		case constants.SEARCH_BLUR:
+			return state.set('focused', false);
+		case constants.CHANGE_LIST:
+			return state.merge({
+				list: action.data,
+				totalPage: action.totalPage
+			});
+		case constants.MOUSE_ENTER:
+			return state.set('mouseIn', true);
+		case constants.MOUSE_LEAVE:
+			return state.set('mouseIn', false);
+		case constants.CHANGE_PAGE:
+			return state.set('page', action.page);
+		default:
+			return state;
+	}
+}
+```
+``` 
+import * as constants from './constants';
+import { fromJS } from 'immutable';
+import axios from 'axios';
+
+const changeList = (data) => ({
+	type: constants.CHANGE_LIST,
+	data: fromJS(data),
+	totalPage: Math.ceil(data.length / 10)
+});
+export const getList = () => {
+	return (dispatch) => {
+		axios.get('/api/headerList.json').then((res) => {
+			const data = res.data;
+			dispatch(changeList(data.data));
+		}).catch(() => {
+			console.log('error');
+		})
+	}
+};
+```
