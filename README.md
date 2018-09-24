@@ -10,9 +10,12 @@
 - [项目代码和性能优化](#user-content-代码和性能优化)
      + [this绑定的性能优化](#user-content-this绑定优化)
      + [合理使用无状态组件](#user-content-使用无状态组件提高性能)
+     + [Immutable.js与redux结合使用](#user-content-immutablejs与redux结合使用)
+     + [避免无意义的网络请求](#user-content-避免无意义的网络请求)
+     + [异步操作代码拆分优化](#user-content-异步操作代码拆分优化)
 
 # 技术栈：
-  react + redux + redux-thunk（让redux支持异步的中间件） +  webpack + react-router + ES6/7/8 + axios + react-transition-group（react动画库）+ react-loadable（使组件按需加载） + styled-components（css组件化） + immutable.js
+  react + redux + redux-thunk（让redux支持异步的中间件） +  webpack + react-router + ES6/7/8 + axios + react-transition-group（react动画库）+ react-loadable（使组件按需载） + styled-components（css组件化） + immutable.js
   
 ## 运行打包（nodejs 6.0+）：
 ```
@@ -342,4 +345,166 @@ import { WriterWrapper } from "../style";
 const Writer = () => <WriterWrapper>HomeWork</WriterWrapper>;
 
 export default Writer;
+```
+#### immutable.js与redux结合使用
+当我们对一个Immutable对象进行操作的时候，ImmutableJS基于哈希映射树(hash map tries)和vector map tries，只clone该节点以及它的祖先节点，其他保持不变，这样可以共享相同的部分，大大提高性能。在对Immutable对象的操作均会返回新的对象，所以使用redux的reducer中就不需要总是想着不能修改原state，因为对Immutable对象的操作返回就是新的对象，且比普通js深拷贝产生的性能消耗要低得多。
+  我在项目中也是大量使用immutable.js
+``` js
+import * as constants from './constants';
+import { fromJS } from 'immutable';
+
+const defaultState = fromJS({
+	focused: false,
+	mouseIn: false,
+	list: [],
+	page: 1,
+	totalPage: 1
+});
+
+export default (state = defaultState, action) => {
+	switch(action.type) {
+		case constants.SEARCH_FOCUS:
+			return state.set('focused', true);
+		case constants.SEARCH_BLUR:
+			return state.set('focused', false);
+		case constants.CHANGE_LIST:
+			return state.merge({
+				list: action.data,
+				totalPage: action.totalPage
+			});
+		case constants.MOUSE_ENTER:
+			return state.set('mouseIn', true);
+		case constants.MOUSE_LEAVE:
+			return state.set('mouseIn', false);
+		case constants.CHANGE_PAGE:
+			return state.set('page', action.page);
+		default:
+			return state;
+	}
+}
+```
+``` 
+import * as constants from './constants';
+import { fromJS } from 'immutable';
+import axios from 'axios';
+
+const changeList = (data) => ({
+	type: constants.CHANGE_LIST,
+	data: fromJS(data),
+	totalPage: Math.ceil(data.length / 10)
+});
+export const getList = () => {
+	return (dispatch) => {
+		axios.get('/api/headerList.json').then((res) => {
+			const data = res.data;
+			dispatch(changeList(data.data));
+		}).catch(() => {
+			console.log('error');
+		})
+	}
+};
+```
+#### 避免无意义的网络请求
+比如在请求热门搜索提示项的时候，只有当size是0的时候我才去发送请求。
+``` js
+  const mapDispathToProps = dispatch => {
+  return {
+    handleInputFocus(list) {
+      list.size === 0 && dispatch(actionCreators.getList());
+      dispatch(actionCreators.searchFocus());
+    },
+  ...
+    };
+```
+
+#### 异步操作代码拆分优化
+在UI组件中因尽量减少业务逻辑操作，像与服务器交互的大量代码都应该解耦出来，所以结合redux-thunk的使用将大量的网络请求代码写在action中就解决了这一问题。
+下面是home页的actionCreators.js，当前模块的所有action和网络请求都在此文件中
+``` js
+import axios from 'axios';
+import * as constants from './constants';
+import { fromJS } from 'immutable';
+
+const changHomeData = (result) => ({
+	type: constants.CHANGE_HOME_DATA,
+	topicList: result.topicList,
+	articleList: result.articleList,
+	recommendList: result.recommendList
+});
+
+const addHomeList = (list, nextPage) => ({
+	type: constants.ADD_ARTICLE_LIST,
+	list: fromJS(list),
+	nextPage
+})
+
+export const getHomeInfo = () => {
+	return (dispatch) => {
+		axios.get('/api/home.json').then((res) => {
+			const result = res.data.data;
+			dispatch(changHomeData(result));
+		});
+	}
+}
+
+export const getMoreList = (page) => {
+	return (dispatch) => {
+		axios.get('/api/homeList.json?page=' + page).then((res) => {
+			const result = res.data.data;
+			dispatch(addHomeList(result, page + 1));
+		});
+	}
+}
+
+export const toggleTopShow = (show) => ({
+	type: constants.TOGGLE_SCROLL_TOP,
+	show
+})
+```
+这样在组件中就可以轻松的去调用网络请求，然后将返回结果发送给reducer进行处理
+``` js
+import React, { PureComponent } from 'react';
+import { ListItem, ListInfo, LoadMore } from '../style';
+import { connect } from 'react-redux';
+import { actionCreators } from '../store';
+import { Link } from 'react-router-dom';
+
+class List extends PureComponent {
+	render() {
+		const { list, getMoreList, page } = this.props;
+		return (
+			<div>
+				{
+					list.map((item, index) => {
+						return (
+							<Link key={index} to={'/detail/' + item.get('id')}>
+								<ListItem >
+									<img alt='' className='pic' src={item.get('imgUrl')} />
+									<ListInfo>
+										<h3 className='title'>{item.get('title')}</h3>
+										<p className='desc'>{item.get('desc')}</p>
+									</ListInfo>
+								</ListItem>
+							</Link>
+						);
+					})
+				}
+				<LoadMore onClick={() => getMoreList(page)}>更多文字</LoadMore>
+			</div>
+		)
+	}
+}
+
+const mapState = (state) => ({
+	list: state.getIn(['home', 'articleList']),
+	page: state.getIn(['home', 'articlePage'])
+});
+
+const mapDispatch = (dispatch) => ({
+	getMoreList(page) {
+		dispatch(actionCreators.getMoreList(page))
+	}
+})
+
+export default connect(mapState, mapDispatch)(List);
 ```
