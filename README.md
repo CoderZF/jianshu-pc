@@ -344,4 +344,4 @@ const Writer = () => <WriterWrapper>HomeWork</WriterWrapper>;
 
 export default Writer;
 ```
-#### immutable.js与redux结合使用
+#### immutable.js
