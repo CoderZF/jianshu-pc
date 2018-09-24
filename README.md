@@ -10,7 +10,7 @@
 - [项目代码和性能优化](#user-content-代码和性能优化)
      + [this绑定的性能优化](#user-content-this绑定优化)
      + [合理使用无状态组件](#user-content-使用无状态组件提高性能)
-     + [Immutable.js与redux结合使用](#user-content-使用immutable.js与redux结合使用)
+     + [Immutable.js与redux结合使用](#user-content-使用)
 
 # 技术栈：
   react + redux + redux-thunk（让redux支持异步的中间件） +  webpack + react-router + ES6/7/8 + axios + react-transition-group（react动画库）+ react-loadable（使组件按需载） + styled-components（css组件化） + immutable.js
@@ -344,4 +344,4 @@ const Writer = () => <WriterWrapper>HomeWork</WriterWrapper>;
 
 export default Writer;
 ```
-#### 使用immutable.js与redux结合使用
+#### 使用
