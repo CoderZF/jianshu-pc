@@ -12,6 +12,7 @@
      + [合理使用无状态组件](#user-content-使用无状态组件提高性能)
      + [Immutable.js与redux结合使用](#user-content-immutablejs与redux结合使用)
      + [避免无意义的网络请求](#user-content-避免无意义的网络请求)
+     + [异步操作代码拆分优化](#user-content-异步操作代码拆分优化)
 
 # 技术栈：
   react + redux + redux-thunk（让redux支持异步的中间件） +  webpack + react-router + ES6/7/8 + axios + react-transition-group（react动画库）+ react-loadable（使组件按需载） + styled-components（css组件化） + immutable.js
@@ -414,4 +415,96 @@ export const getList = () => {
     },
   ...
     };
+```
+
+#### 异步操作代码拆分优化
+在UI组件中因尽量减少业务逻辑操作，像与服务器交互的大量代码都应该解耦出来，所以结合redux-thunk的使用将大量的网络请求代码写在action中就解决了这一问题。
+下面是home页的actionCreators.js，当前模块的所有action和网络请求都在此文件中
+``` js
+import axios from 'axios';
+import * as constants from './constants';
+import { fromJS } from 'immutable';
+
+const changHomeData = (result) => ({
+	type: constants.CHANGE_HOME_DATA,
+	topicList: result.topicList,
+	articleList: result.articleList,
+	recommendList: result.recommendList
+});
+
+const addHomeList = (list, nextPage) => ({
+	type: constants.ADD_ARTICLE_LIST,
+	list: fromJS(list),
+	nextPage
+})
+
+export const getHomeInfo = () => {
+	return (dispatch) => {
+		axios.get('/api/home.json').then((res) => {
+			const result = res.data.data;
+			dispatch(changHomeData(result));
+		});
+	}
+}
+
+export const getMoreList = (page) => {
+	return (dispatch) => {
+		axios.get('/api/homeList.json?page=' + page).then((res) => {
+			const result = res.data.data;
+			dispatch(addHomeList(result, page + 1));
+		});
+	}
+}
+
+export const toggleTopShow = (show) => ({
+	type: constants.TOGGLE_SCROLL_TOP,
+	show
+})
+```
+这样在组件中就可以轻松的去调用网络请求，然后将返回结果发送给reducer进行处理
+``` js
+import React, { PureComponent } from 'react';
+import { ListItem, ListInfo, LoadMore } from '../style';
+import { connect } from 'react-redux';
+import { actionCreators } from '../store';
+import { Link } from 'react-router-dom';
+
+class List extends PureComponent {
+	render() {
+		const { list, getMoreList, page } = this.props;
+		return (
+			<div>
+				{
+					list.map((item, index) => {
+						return (
+							<Link key={index} to={'/detail/' + item.get('id')}>
+								<ListItem >
+									<img alt='' className='pic' src={item.get('imgUrl')} />
+									<ListInfo>
+										<h3 className='title'>{item.get('title')}</h3>
+										<p className='desc'>{item.get('desc')}</p>
+									</ListInfo>
+								</ListItem>
+							</Link>
+						);
+					})
+				}
+				<LoadMore onClick={() => getMoreList(page)}>更多文字</LoadMore>
+			</div>
+		)
+	}
+}
+
+const mapState = (state) => ({
+	list: state.getIn(['home', 'articleList']),
+	page: state.getIn(['home', 'articlePage'])
+});
+
+const mapDispatch = (dispatch) => ({
+	getMoreList(page) {
+		dispatch(actionCreators.getMoreList(page))
+	}
+})
+
+export default connect(mapState, mapDispatch)(List);
 ```
