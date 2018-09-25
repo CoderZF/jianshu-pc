@@ -1,4 +1,4 @@
-import React, { PureComponent } from "react";
+import React from "react";
 import { Redirect } from "react-router-dom";
 import { connect } from "react-redux";
 import { LoginWrapper, LoginBox, Input, Button } from "./style";
@@ -23,7 +23,7 @@ const Login = props => {
               this.password = input;
             }}
           />
-          <Button onClick={() => this.props.login(this.account, this.password)}>
+          <Button onClick={() => props.login(this.account, this.password)}>
             登陆
           </Button>
         </LoginBox>

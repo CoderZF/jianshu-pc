@@ -9,6 +9,13 @@ const defaultState = fromJS({
   totalPage: 1
 });
 
+const changeList = (state, action) => {
+  return state.merge({
+    list: action.data,
+    totalPage: action.totalPage
+  });
+};
+
 export default (state = defaultState, action) => {
   switch (action.type) {
     case constants.SEARCH_FOCUS:
@@ -16,10 +23,7 @@ export default (state = defaultState, action) => {
     case constants.SEARCH_BLUR:
       return state.set("focused", false);
     case constants.CHANGE_LIST:
-      return state.merge({
-        list: action.data,
-        totalPage: action.totalPage
-      });
+      return changeList(state, action);
     case constants.MOUSE_ENTER:
       return state.set("mouseIn", true);
     case constants.MOUSE_LEAVE:
