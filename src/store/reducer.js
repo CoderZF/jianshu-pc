@@ -14,5 +14,7 @@ const reducer = combineReducers({
 export default reducer;
 
 export let testFn = function  (parm) {
-  console.log(parm)
+  if(typeof parm === 'boolean'){
+    console.log(parm)
+  }
 }
