@@ -12,3 +12,7 @@ const reducer = combineReducers({
 });
 
 export default reducer;
+
+export let testFn = function  (parm) {
+  console.log(parm)
+}
